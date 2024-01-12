@@ -1,0 +1,11 @@
+API Routes and Purposes
+
+Route for Scan:
+  /api/check-scan 
+
+  Methods:
+    POST from frontend:
+      sends the scan input to backend
+      response is status and data (if vailid)
+    
+
