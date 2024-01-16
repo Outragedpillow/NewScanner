@@ -16,6 +16,9 @@ const (
   CAM = "CAMERA"
   COM = "COMPUTER"
   HEA = "HEADPHONES"
+
+  ADD = "ADD"
+  REMOVE = "REMOVE"
 )
 
 func (database *Database) Open(fileName string) error {
@@ -161,5 +164,72 @@ func (database Database) FindDevice(devType string, serial string) (Device, erro
   }
 
   return device, nil
+}
+
+func (database *Database) UpdateDevice(assignmentState string, deviceType string, serial string, residentMdoc int) error {
+  switch assignmentState {
+  case "ASSIGN":
+    fmt.Println("Assign");
+    sqlStatment, prepErr := database.Conn.Prepare("UPDATE devices SET assigned_to = ? WHERE type = ? AND serial = ?");
+    if prepErr != nil {
+      return fmt.Errorf("db.go UpdateDevice assign Prepare. Error: %w", prepErr);
+    }
+
+    defer sqlStatment.Close();
+
+    _, execErr := sqlStatment.Exec(residentMdoc, deviceType, serial);
+    if execErr != nil {
+      return fmt.Errorf("db.go UpdateDevice assign Exec. Error: %w", execErr);
+    }
+  case "UNASSIGN":
+    fmt.Println("Unassign");
+    sqlStatment, prepErr := database.Conn.Prepare("UPDATE devices SET assigned_to = NULL WHERE type = ? AND serial = ?");
+    if prepErr != nil {
+      return fmt.Errorf("db.go UpdateDevice unassign Prepare. Error: %w", prepErr);
+    }
+
+    defer sqlStatment.Close();
+
+    _, execErr := sqlStatment.Exec(deviceType, serial);
+    if execErr != nil {
+      return fmt.Errorf("db.go UpdateDevice unassign Exec. Error: %w", execErr);
+    }
+  }
+
+  return nil;
+}
+
+func (db *Database) UpdateCurrentSignOuts(action string, resident *Resident) error {
+  switch action {
+  case ADD:
+    sqlStatment, prepErr := db.Conn.Prepare("INSERT INTO currentsignouts (resident_mdoc, resident_name) VALUES (?, ?)");
+    if prepErr != nil {
+      return fmt.Errorf("db.go UpdateCurrentSignOuts ADD Prepare. Error: %w", prepErr);
+    }
+
+    _, execErr := sqlStatment.Exec(resident.Mdoc, resident.Name);
+    if execErr != nil {
+      return fmt.Errorf("db.go UpdateCurrentSignOuts ADD Exec. Error: %w", execErr);
+    }
+
+    return nil;
+
+  case REMOVE:
+    sqlStatment, prepErr := db.Conn.Prepare("DELETE FROM currentsignouts where resident_mdoc = ?");
+    if prepErr != nil {
+      return fmt.Errorf("db.go UpdateCurrentSignOuts REMOVE Prepare. Error: %w", prepErr);
+    }
+
+    _, execErr := sqlStatment.Exec(resident.Mdoc);
+    if execErr != nil {
+      return fmt.Errorf("db.go UpdateCurrentSignOuts REMOVE Exec. Error: %w", execErr);
+    }
+
+  default:
+    return fmt.Errorf("db.go UpdateCurrentSignOuts default. ERROR: action must be either ADD or Remove.")
+
+  }
+
+  return nil;
 }
 

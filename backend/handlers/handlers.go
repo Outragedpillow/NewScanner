@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"NewScanner/structs"
+	"NewScanner/utils"
 	"net/http"
 )
 
@@ -9,13 +10,12 @@ const (
   CHECK_SCAN = "api/check-scan"
 )
 
-type ScanData struct {
-  Resident structs.Resident 
-  Count int 
-}
+var CurrentSignouts []structs.Resident;
 
 func HandleRoutes(mux *http.ServeMux, db *structs.Database) {
   var scanData ScanData;
+
+  utils.SetCurrentSignOuts(db, &CurrentSignouts);
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Handler for the root path
@@ -38,18 +38,3 @@ func setCORSHeaders(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-func (check *ScanData) ResetCount() {
-  check.Count = 0;
-}
-
-func (check *ScanData) Increment() {
-  check.Count += 1;
-}
-
-func (check ScanData) GetCount() int {
-  return check.Count;
-}
-
-func (check *ScanData) AssignResident(resident structs.Resident) {
-  check.Resident = resident;
-}
