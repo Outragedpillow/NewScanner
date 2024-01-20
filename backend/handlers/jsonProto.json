@@ -1,0 +1,12 @@
+{
+  "api/check-scan POST Response": {
+    "Success": "True/False",
+    "Type": "Resident/Device/Error",
+    "Action": "(Device) Assign/Unassign",
+    "Object": {"Object": "Object Fields"},
+    "Error": {
+      "Place": "File and Location",
+      "Message": "Error Information"
+    }
+  }
+}

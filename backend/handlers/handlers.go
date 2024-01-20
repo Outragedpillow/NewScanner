@@ -10,19 +10,20 @@ const (
   CHECK_SCAN = "api/check-scan"
 )
 
-var CurrentSignouts []structs.Resident;
 
 func HandleRoutes(mux *http.ServeMux, db *structs.Database) {
-  var scanData ScanData;
+  var scanData structs.ScanData = structs.ScanData{
+    CurrentSignouts: &[]structs.Resident{},
+  }
 
-  utils.SetCurrentSignOuts(db, &CurrentSignouts);
+  utils.SetCurrentSignOuts(db, scanData.CurrentSignouts);
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Handler for the root path
 	});
 
   mux.HandleFunc("/api/check-scan", setCORSHeaders(func(w http.ResponseWriter, r *http.Request) {
-        HandleCheckScan(w, r, db, &scanData);
+        HandleCheckScan(w, r, db, &scanData, scanData.CurrentSignouts);
     }));
 }
 

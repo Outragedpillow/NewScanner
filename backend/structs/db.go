@@ -3,6 +3,7 @@ package structs
 import (
 	"database/sql"
 	"errors"
+  "time"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,7 +25,7 @@ const (
 func (database *Database) Open(fileName string) error {
   db, openDbErr := sql.Open("sqlite3", fileName);
   if openDbErr != nil {
-    return fmt.Errorf("db.go Open, failed to open SQLite file with name %s. Error: %w", fileName, openDbErr);
+    return fmt.Errorf("Failed to open SQLite file with name %s. Error: %w", fileName, openDbErr);
   }
 
   database.Conn = db;
@@ -45,14 +46,14 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
 
     stmnt, pErr := database.Conn.Prepare(`SELECT EXISTS (SELECT 1 FROM residents WHERE mdoc = ? LIMIT 1)`)
     if pErr != nil {
-      return resident, fmt.Errorf("db.go FindResident pErr. Error: %w", pErr);
+      return resident, pErr;
     }
 
     defer stmnt.Close();
 
     qErr := stmnt.QueryRow(mdoc).Scan(&exists);
     if qErr != nil {
-      return resident, fmt.Errorf("db.go FindResident qErr. Error: %w", qErr);
+      return resident, qErr;
     }
 
     if exists == 1 {
@@ -63,25 +64,25 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
           WHERE residents.mdoc = ?
       `)
       if prepErr != nil {
-          return resident, fmt.Errorf("db.go FindResident Prepare. Error: %w", prepErr)
+          return resident, prepErr;
       }
 
       defer sqlStatement.Close()
 
-      rows, queryErr := sqlStatement.Query(mdoc)
+      rows, queryErr := sqlStatement.Query(mdoc);
       if queryErr != nil {
-          return resident, fmt.Errorf("db.go FindResident Query. Error: %w", queryErr)
+          return resident, queryErr;
       }
-      defer rows.Close()
+      defer rows.Close();
 
       for rows.Next() {
-          var device Device
-          var deviceType, deviceSerial sql.NullString
-          var deviceTagNumber sql.NullInt32
-          var assignedTo sql.NullInt32
-          err := rows.Scan(&resident.Name, &resident.Mdoc, &deviceType, &deviceSerial, &deviceTagNumber, &assignedTo)
+          var device Device;
+          var deviceType, deviceSerial sql.NullString;
+          var deviceTagNumber sql.NullInt32;
+          var assignedTo sql.NullInt32;
+          err := rows.Scan(&resident.Name, &resident.Mdoc, &deviceType, &deviceSerial, &deviceTagNumber, &assignedTo);
           if err != nil {
-              return resident, fmt.Errorf("db.go FindResident Scan. Error: %w", err)
+              return resident, fmt.Errorf("Error: %w", err);
           }
 
           // Check if all fields are not NULL
@@ -107,20 +108,16 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
 }
 
 func (database Database) FindDevice(devType string, serial string) (Device, error) {
-  fmt.Println(serial)
+  deviceType := strings.ToLower(devType);
 
-  deviceType := strings.ToLower(devType)
-
-  var device Device
-  var assignedto sql.NullInt32
+  var device Device;
+  var assignedto sql.NullInt32;
   // use this to see is QR type int rather than serial string
   testIfTag, convErr := strconv.Atoi(serial);
   if convErr != nil {
-    fmt.Println("Hit inside convErr")
-    
     sqlStatement, prepErr := database.Conn.Prepare("select type, serial, tag_number, assigned_to from devices where type = ? and serial = ?");
     if prepErr != nil {
-      return device, fmt.Errorf("db.go FindDevice prepErr != nil. Error: %w", prepErr)
+      return device, prepErr;
     }
 
     defer sqlStatement.Close();
@@ -130,13 +127,13 @@ func (database Database) FindDevice(devType string, serial string) (Device, erro
       if queryErr == sql.ErrNoRows {
         return device, fmt.Errorf("Device %v was not found. Error: %w", device.Tag_number, queryErr);
       }
-      return device, fmt.Errorf("db.go FindDevice queryRowErr != nil. Error: %w", queryErr);
+      return device, queryErr;
     }
 
     // check if assignedto is valid (not null)
     if assignedto.Valid {
       // create a new resident instance and assign it to device.assigned_to
-      device.Assigned_to = &Resident{Mdoc: int(assignedto.Int32)}
+      device.Assigned_to = &Resident{Mdoc: int(assignedto.Int32)};
     }
 
     return device, nil;
@@ -144,7 +141,7 @@ func (database Database) FindDevice(devType string, serial string) (Device, erro
 
   sqlStatement, preperr := database.Conn.Prepare("select type, serial, tag_number, assigned_to from devices where type = ? and tag_number = ?");
   if preperr != nil {
-    return device, fmt.Errorf("db.go findDevice prepare. error: %w", preperr)
+    return device, preperr;
   }
   
   defer sqlStatement.Close();
@@ -154,13 +151,13 @@ func (database Database) FindDevice(devType string, serial string) (Device, erro
     if queryErr == sql.ErrNoRows {
       return device, fmt.Errorf("Device not found. Error: %w", queryErr);
     }
-    return device, fmt.Errorf("db.go findDevice queryrow.scan. error: %w", queryErr)
+    return device, queryErr;
   }
 
   // check if assignedto is valid (not null)
   if assignedto.Valid {
     // create a new resident instance and assign it to device.assigned_to
-    device.Assigned_to = &Resident{Mdoc: int(assignedto.Int32)}
+    device.Assigned_to = &Resident{Mdoc: int(assignedto.Int32)};
   }
 
   return device, nil
@@ -172,27 +169,27 @@ func (database *Database) UpdateDevice(assignmentState string, deviceType string
     fmt.Println("Assign");
     sqlStatment, prepErr := database.Conn.Prepare("UPDATE devices SET assigned_to = ? WHERE type = ? AND serial = ?");
     if prepErr != nil {
-      return fmt.Errorf("db.go UpdateDevice assign Prepare. Error: %w", prepErr);
+      return prepErr;
     }
 
     defer sqlStatment.Close();
 
     _, execErr := sqlStatment.Exec(residentMdoc, deviceType, serial);
     if execErr != nil {
-      return fmt.Errorf("db.go UpdateDevice assign Exec. Error: %w", execErr);
+      return execErr;
     }
   case "UNASSIGN":
     fmt.Println("Unassign");
     sqlStatment, prepErr := database.Conn.Prepare("UPDATE devices SET assigned_to = NULL WHERE type = ? AND serial = ?");
     if prepErr != nil {
-      return fmt.Errorf("db.go UpdateDevice unassign Prepare. Error: %w", prepErr);
+      return prepErr;
     }
 
     defer sqlStatment.Close();
 
     _, execErr := sqlStatment.Exec(deviceType, serial);
     if execErr != nil {
-      return fmt.Errorf("db.go UpdateDevice unassign Exec. Error: %w", execErr);
+      return execErr;
     }
   }
 
@@ -204,12 +201,12 @@ func (db *Database) UpdateCurrentSignOuts(action string, resident *Resident) err
   case ADD:
     sqlStatment, prepErr := db.Conn.Prepare("INSERT INTO currentsignouts (resident_mdoc, resident_name) VALUES (?, ?)");
     if prepErr != nil {
-      return fmt.Errorf("db.go UpdateCurrentSignOuts ADD Prepare. Error: %w", prepErr);
+      return prepErr;
     }
 
     _, execErr := sqlStatment.Exec(resident.Mdoc, resident.Name);
     if execErr != nil {
-      return fmt.Errorf("db.go UpdateCurrentSignOuts ADD Exec. Error: %w", execErr);
+      return execErr;
     }
 
     return nil;
@@ -217,19 +214,42 @@ func (db *Database) UpdateCurrentSignOuts(action string, resident *Resident) err
   case REMOVE:
     sqlStatment, prepErr := db.Conn.Prepare("DELETE FROM currentsignouts where resident_mdoc = ?");
     if prepErr != nil {
-      return fmt.Errorf("db.go UpdateCurrentSignOuts REMOVE Prepare. Error: %w", prepErr);
+      return prepErr;
     }
 
     _, execErr := sqlStatment.Exec(resident.Mdoc);
     if execErr != nil {
-      return fmt.Errorf("db.go UpdateCurrentSignOuts REMOVE Exec. Error: %w", execErr);
+      return execErr;
     }
 
   default:
-    return fmt.Errorf("db.go UpdateCurrentSignOuts default. ERROR: action must be either ADD or Remove.")
+    return fmt.Errorf("ERROR: action must be either ADD or Remove.");
 
   }
 
   return nil;
 }
 
+func (database *Database) UpdateAssignmentLog(assingment Assignment) Error {
+  formattedDay := time.Now().Format("01/02/06");
+
+  sqlStatement, prepErr := database.Conn.Prepare("INSERT INTO assignments (resident_mdoc, resident_name, device_type, device_serial, time_issued, time_returned, day) VALUES (?, ?, ?, ?, ?, ?, ?)");
+  if prepErr != nil {
+    return Error {
+      Place: "db.go UpdateAssignmentLog Prepare.",
+      Message: prepErr.Error(),
+    }
+  }
+  
+  defer sqlStatement.Close();
+
+  _, execErr := sqlStatement.Exec(assingment.Resident.Mdoc, assingment.Resident.Name, assingment.Device.Type, assingment.Device.Serial, assingment.Time_issued, assingment.Time_returned, formattedDay);
+  if execErr != nil {
+    return Error {
+      Place: "db.gp UpdateAssignmentLog Exec",
+      Message: execErr.Error(),
+    }
+  }
+
+  return Error{};
+}

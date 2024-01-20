@@ -25,6 +25,7 @@ func HandleResDevices(db *structs.Database, resident *structs.Resident, device *
   }
 
   if hasType {
+    fmt.Println("hasType")
     if resident.Devices[index].Assigned_to != nil && device.Assigned_to != nil && resident.Devices[index].Assigned_to.Mdoc == device.Assigned_to.Mdoc && resident.Devices[index].Serial == device.Serial {
       // update db
       updateDbErr := db.UpdateDevice(UNASSIGN, device.Type, device.Serial, resident.Mdoc);
@@ -43,6 +44,7 @@ func HandleResDevices(db *structs.Database, resident *structs.Resident, device *
       return false, errors.New("Resident already has a device of type " + device.Type + ". Cannot assign more than one of each type to a single resident.");
     }
   } else {
+    fmt.Println("!hasType")
     if device.Assigned_to == nil {
       // update db
       updateDbErr := db.UpdateDevice(ASSIGN, device.Type, device.Serial, resident.Mdoc);
@@ -55,7 +57,6 @@ func HandleResDevices(db *structs.Database, resident *structs.Resident, device *
       resident.Devices = append(resident.Devices, *device);
 
       handleCurrentSignOuts(db, currentSignOuts, *resident, ASSIGN);
-
 
       return true, nil;
     } else {
@@ -136,7 +137,7 @@ func SetCurrentSignOuts(db *structs.Database, currentSignOuts *[]structs.Residen
       continue;
     }
 
-    *currentSignOuts = append(*currentSignOuts, foundResident)
+    *currentSignOuts = append(*currentSignOuts, foundResident);
   }
 
   return nil;

@@ -1,4 +1,6 @@
 import React from "react";
+import { Box, Container } from "@mui/material";
+import {Grid} from "@mui/material";
 
 export default function Home() {
   const [responseData, setResponseData] = React.useState({});
@@ -26,13 +28,20 @@ export default function Home() {
   }
 
   return (
-    <>
-      <header>
-        <h1>Home Page</h1>
-      </header>
-        <DataInput sendData={postApiData} />
-        <DisplayScanResponse responseData={responseData} />
-    </>
+    <Container>
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <h1>Scan Data</h1>
+          <DataInput sendData={postApiData} />
+          <DisplayScanResponse responseData={responseData} />
+        </Grid>
+        
+        <Grid item xs={6}>
+          <h1>Current Signouts</h1>
+          {/* Place your content for the second box here */}
+        </Grid>
+      </Grid>
+    </Container>
   )
 }
 
@@ -106,3 +115,8 @@ const DisplayScanResponse = ({ responseData }) => {
   );
 };
 
+const DisplayCurrentSignouts = () => {
+  return (
+    <h1>Name Here</h1>
+  )
+}
