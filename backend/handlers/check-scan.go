@@ -43,6 +43,7 @@ func HandleCheckScan(w http.ResponseWriter, r *http.Request, db *structs.Databas
             Success: false,
             Type: "Error",
             Action: "GetPostData",
+            CurrentSignouts: CurrentSignouts,
             Error: getPostDataErr,
           }
 
@@ -57,7 +58,9 @@ func HandleCheckScan(w http.ResponseWriter, r *http.Request, db *structs.Databas
           scanData.ResetCount();
           response := structs.ScanResponse {
             Success: true,
+            RefreshCurr: true,
             Type: "BREAK",
+            CurrentSignouts: CurrentSignouts,
             Action: "BREAK",
           }
 
@@ -71,11 +74,11 @@ func HandleCheckScan(w http.ResponseWriter, r *http.Request, db *structs.Databas
         if scanData.Count == 0 {
           foundResident, handleResReqErr := handleResidentRequest(w, db, scan, CurrentSignouts);
           if !handleResReqErr.IsNil() {
-            // http.Error(w, "Error: The expected request type of Resident ID was not handled properly. Please validate scan and retry. If scan was not of type Resident, then the error is likely due to the fact that a Resident ID was expected", http.StatusInternalServerError);
             responseData := structs.ScanResponse {
               Success: false,
               Action: "handleResidentRequest",
               Type: "Error",
+              CurrentSignouts: CurrentSignouts,
               Error: handleResReqErr,
             }
 
@@ -96,6 +99,7 @@ func HandleCheckScan(w http.ResponseWriter, r *http.Request, db *structs.Databas
             response := structs.ScanResponse {
               Success: false,
               Action: "handleDeviceRequest",
+              CurrentSignouts: CurrentSignouts,
               Error: handleDevReqErr,
             }
 
@@ -139,7 +143,9 @@ func handleResidentRequest(w http.ResponseWriter, db *structs.Database, scan str
   responseData := structs.ScanResponse {
     Success: true,
     Type: "Resident",
+    Action: "Found",
     Object: resident,
+    CurrentSignouts: CurrentSignouts,
   }
 
   encodeErr := json.NewEncoder(w).Encode(responseData);
@@ -195,6 +201,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "ASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
         
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -221,6 +228,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "UNASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -262,6 +270,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "ASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -287,6 +296,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "UNASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -328,6 +338,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "ASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -353,6 +364,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "UNASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -394,6 +406,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "ASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -419,6 +432,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "UNASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -460,6 +474,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "ASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -485,6 +500,7 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           Action: "UNASSIGN",
           Type: "DEVICE",
           Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);
@@ -495,6 +511,22 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           }
         }
       }
+    default:
+        response := structs.ScanResponse {
+          Success: false,
+          Action: "ERROR",
+          Type: "DEVICE",
+          CurrentSignouts: CurrentSignouts,
+        }
+
+        encodeErr := json.NewEncoder(w).Encode(response);
+        if encodeErr != nil {
+          return structs.Error {
+            Place: "check-scan.go handleDeviceRequest HEA_QR (!assign) else encodeErr",
+            Message: encodeErr.Error(),
+          }
+        }
+
   }
 
   return structs.Error{};

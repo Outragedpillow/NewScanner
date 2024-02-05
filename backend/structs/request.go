@@ -13,9 +13,11 @@ const (
 
 type ScanResponse struct {
   Success bool `json:"success"`
+  RefreshCurr bool `json:"refreshcurr"`
   Type string `json:"type"`
   Action string `json:"action"`
   Object interface{} `json:"object"`
+  CurrentSignouts *[]Resident `json:"currentsignouts"`
   Error Error `json:"error"`
 }
 

@@ -22,6 +22,10 @@ func HandleRoutes(mux *http.ServeMux, db *structs.Database) {
 		// Handler for the root path
 	});
 
+  mux.HandleFunc("/api/currentsignouts", setCORSHeaders(func(w http.ResponseWriter, r *http.Request) {
+    HandleGetCurrentSignouts(w, r, db, scanData);
+  }))
+
   mux.HandleFunc("/api/check-scan", setCORSHeaders(func(w http.ResponseWriter, r *http.Request) {
         HandleCheckScan(w, r, db, &scanData, scanData.CurrentSignouts);
     }));
