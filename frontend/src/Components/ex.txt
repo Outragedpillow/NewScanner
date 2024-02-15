@@ -1,0 +1,62 @@
+
+import { Link } from 'react-router-dom';
+import React from 'react';
+import { List, ListItem, ListItemText, ListItemIcon, ListItemButton, Typography } from '@mui/material';
+import HistorySharpIcon from '@mui/icons-material/HistorySharp';
+
+const NavBar = () => {
+
+  return (
+    <nav>
+        <List>
+          <ListItem disablePadding >
+            <ListItemButton sx={{pl: 0}}>
+              <ListItemIcon>
+                <HistorySharpIcon fontSize='large' sx={{color: "blue"}} />
+                <Link to="/home/history" style={{textDecoration: 'none', marginTop: '5px', marginLeft: '10px'}}><Typography fontSize={20}>History</Typography></Link>
+              </ListItemIcon>
+             </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemIcon>
+                <Link to="/home/current" style={{textDecoration: 'none', marginTop: '5px', marginLeft: '10px'}}><Typography fontSize={20}>Current Signouts</Typography></Link>
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
+        </List>
+    </nav>
+  )
+};
+
+export default NavBar;
+
+    <nav>
+        <List>
+          <ListItem disablePadding>
+            <ListItemButton sx={{pl: .5}}>
+              <ListItemIcon>
+                <CoPresentSharpIcon fontSize='large' sx={{color: 'blue'}} />
+              </ListItemIcon>
+              <Link to='/home/current' style={{textDecoration: 'none', color: 'blue', fontSize: 'large'}}>Current Signouts</Link>
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton sx={{pl: 0, mt: 2.5}}>
+              <ListItemIcon>
+                <HistorySharpIcon fontSize='large' sx={{color: 'blue'}} />
+              </ListItemIcon>
+              <Link to='/home/history' style={{textDecoration: 'none', color: 'blue', fontSize: 'large'}}>History</Link>
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton sx={{pl: 0, mt: 2.5}}>
+              <ListItemIcon>
+                <InfoSharpIcon fontSize='large' sx={{color: 'blue'}} />
+              </ListItemIcon>
+              <Link to='/home/about' style={{textDecoration: 'none', color: 'blue', fontSize: 'large'}}>About</Link>
+            </ListItemButton>
+          </ListItem>
+        </List>
+    </nav>
+

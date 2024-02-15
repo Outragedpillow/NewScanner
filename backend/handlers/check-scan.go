@@ -14,12 +14,16 @@ const (
   COMPUTER = "COMPUTER"
   CAMERA = "CAMERA"
   HEADPHONES = "HEADPHONES"
+  HEADSET = "HEADSET"
+  MOUSE = "MOUSE"
 
-  COM_SER = "1SR"
+  COM_SER = "1S2"
   CAM_SER = "214"
   COM_QR = "COM"
   CAM_QR = "CAM"
   HEA_QR = "HEA"
+  HDS_QR = "HDS"
+  MOU_QR = "MOU"
 
   ASSIGN = "ASSIGN"
   UNASSIGN = "UNASSIGN"
@@ -172,7 +176,8 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
 
   switch prefix {
     case COM_SER:
-      foundDevice, findDeviceErr := db.FindDevice(COMPUTER, serial);
+      newSerial := serial[12:];
+      foundDevice, findDeviceErr := db.FindDevice(COMPUTER, newSerial);
       if findDeviceErr != nil {
         return structs.Error{
           Place: "check-scan.go handleDeviceRequest COM_SER findDeviceErr",
@@ -511,12 +516,152 @@ func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan struc
           }
         }
       }
+    case HDS_QR:
+      foundDevice, findDeviceErr := db.FindDevice(HEADSET, qrData);
+      if findDeviceErr != nil {
+        return structs.Error{
+          Place: "check-scan.go handleDeviceRequest HDS_QR findDeviceErr",
+          Message: findDeviceErr.Error(),
+        };
+      }
+
+      assign, handleResDeviceErr := scanData.HandleResDevices(db, &foundDevice);
+      if !handleResDeviceErr.IsNil() {
+        return handleResDeviceErr;
+      }
+
+      if assign {
+        newAssignment := structs.Assignment {
+          Resident: *scanData.Resident,
+          Device: foundDevice,
+          Time_issued: formattedTime,
+        }
+        assignmentErr := db.UpdateAssignmentLog(newAssignment);
+        if !assignmentErr.IsNil() {
+          return assignmentErr;
+        }
+
+        response := structs.ScanResponse {
+          Success: true,
+          Action: "ASSIGN",
+          Type: "DEVICE",
+          Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
+        }
+
+        encodeErr := json.NewEncoder(w).Encode(response);
+        if encodeErr != nil {
+          return structs.Error {
+            Place: "check-scan.go handleDeviceRequest HDS_QR assign encodeErr",
+            Message: encodeErr.Error(),
+          }
+        }
+      } else {
+        newAssignment := structs.Assignment {
+          Resident: *scanData.Resident,
+          Device: foundDevice,
+          Time_returned: formattedTime,
+        }
+
+        assignmentErr := db.UpdateAssignmentLog(newAssignment);
+        if !assignmentErr.IsNil() {
+          return assignmentErr;
+        }
+        response := structs.ScanResponse {
+          Success: true,
+          Action: "UNASSIGN",
+          Type: "DEVICE",
+          Object: foundDevice,
+          CurrentSignouts: CurrentSignouts,
+        }
+
+        encodeErr := json.NewEncoder(w).Encode(response);
+        if encodeErr != nil {
+          return structs.Error {
+            Place: "check-scan.go handleDeviceRequest HDS_QR (!assign) else encodeErr",
+            Message: encodeErr.Error(),
+          }
+        }
+      }
+
+  case MOU_QR:
+    foundDevice, findDeviceErr := db.FindDevice(MOUSE, qrData);
+    if findDeviceErr != nil {
+      return structs.Error{
+        Place: "check-scan.go handleDeviceRequest MOU_QR findDeviceErr",
+        Message: findDeviceErr.Error(),
+      };
+    }
+
+    assign, handleResDeviceErr := scanData.HandleResDevices(db, &foundDevice);
+    if !handleResDeviceErr.IsNil() {
+      return handleResDeviceErr;
+    }
+
+    if assign {
+      newAssignment := structs.Assignment {
+        Resident: *scanData.Resident,
+        Device: foundDevice,
+        Time_issued: formattedTime,
+      }
+      assignmentErr := db.UpdateAssignmentLog(newAssignment);
+      if !assignmentErr.IsNil() {
+        return assignmentErr;
+      }
+
+      response := structs.ScanResponse {
+        Success: true,
+        Action: "ASSIGN",
+        Type: "DEVICE",
+        Object: foundDevice,
+        CurrentSignouts: CurrentSignouts,
+      }
+
+      encodeErr := json.NewEncoder(w).Encode(response);
+      if encodeErr != nil {
+        return structs.Error {
+          Place: "check-scan.go handleDeviceRequest MOU_QR assign encodeErr",
+          Message: encodeErr.Error(),
+        }
+      }
+    } else {
+      newAssignment := structs.Assignment {
+        Resident: *scanData.Resident,
+        Device: foundDevice,
+        Time_returned: formattedTime,
+      }
+
+      assignmentErr := db.UpdateAssignmentLog(newAssignment);
+      if !assignmentErr.IsNil() {
+        return assignmentErr;
+      }
+      response := structs.ScanResponse {
+        Success: true,
+        Action: "UNASSIGN",
+        Type: "DEVICE",
+        Object: foundDevice,
+        CurrentSignouts: CurrentSignouts,
+      }
+
+      encodeErr := json.NewEncoder(w).Encode(response);
+      if encodeErr != nil {
+        return structs.Error {
+          Place: "check-scan.go handleDeviceRequest MOU_QR (!assign) else encodeErr",
+          Message: encodeErr.Error(),
+        }
+      }
+    }
+
     default:
         response := structs.ScanResponse {
           Success: false,
           Action: "ERROR",
           Type: "DEVICE",
           CurrentSignouts: CurrentSignouts,
+          Error: structs.Error{
+            Place: "check-scan.go handleDeviceRequest default",
+            Message: "Invalid device input. Device type unknown. Please validate input and rescan",
+          },
         }
 
         encodeErr := json.NewEncoder(w).Encode(response);

@@ -1,7 +1,8 @@
 import React from "react";
 import axios from "axios";
-import { Box, Button, FormControl, Input, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { Box, Button, FormControl, Input, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import { makeStyles } from '@mui/styles';
+import { PostDataContext } from "../Pages/Home";
 
 const useStyles = makeStyles({
   redBackground: {
@@ -15,8 +16,9 @@ const useStyles = makeStyles({
   },
 });
 
-const Sidebar = ({ setGetData, setPostData, postData, setClearScans, clearScans }) => {
+const Sidebar = ({ setGetData, setPostData, setClearScans, clearScans }) => {
   const classes = useStyles();
+  const postData = React.useContext(PostDataContext);
 
   const [inputData, setInputData] = React.useState("");
   const [scanArray, setScanArray] = React.useState([]);
@@ -71,17 +73,17 @@ const Sidebar = ({ setGetData, setPostData, postData, setClearScans, clearScans 
   }
 
   return (
-    <Box sx={{ height: "95vh", overflow: "auto" }} className={flashColor === 'red' ? classes.flashBackground : ''}>
-      <FormControl component="form" onSubmit={handleSubmit}>
-        <Input autoFocus value={inputData} onChange={(e) => setInputData(e.target.value)}/>
+    <Box sx={{ height: "95vh", overflow: "auto", width: '350px'}} className={flashColor === 'red' ? classes.flashBackground : ''}>
+      <FormControl component="form" onSubmit={handleSubmit} sx={{width: 1}} >
+        <Input autoFocus value={inputData} onChange={(e) => setInputData(e.target.value)} sx={{width: 1}} />
         <Button type="submit">Submit</Button>
       </FormControl>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Success</TableCell>
-            <TableCell>Found</TableCell>
-            <TableCell>Action</TableCell>
+            <TableCell><Typography fontSize={20}>Success</Typography></TableCell>
+            <TableCell><Typography fontSize={20}>Found</Typography></TableCell>
+            <TableCell><Typography fontSize={20}>Action</Typography></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -90,10 +92,10 @@ const Sidebar = ({ setGetData, setPostData, postData, setClearScans, clearScans 
               <TableCell>{item.success.toString().toUpperCase()}</TableCell>
               {item.object !== null ? 
                 <TableCell>
-                  {item.type === "Resident" ? item.object.name : item.type === "DEVICE" ? item.object.type.toUpperCase() + " " + item.object.tag_number : "" }
+                  <Typography fontSize={15}>{item.type === "Resident" ? item.object.name : item.type === "DEVICE" ? item.object.type.toUpperCase() + " " + item.object.tag_number : "" }</Typography>
                 </TableCell>
-              : <TableCell>Null</TableCell>}
-              <TableCell>{item.success ? item.action : item.error.message}</TableCell>
+              : <TableCell><Typography fontSize={15}>Null</Typography></TableCell>}
+              <TableCell><Typography fontSize={15}>{item.success ? item.action : item.error.message}</Typography></TableCell>
             </TableRow>
           ))}
         </TableBody>

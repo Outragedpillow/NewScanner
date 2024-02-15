@@ -20,3 +20,11 @@ type Assignment struct {
   Time_returned string `json:"time_returned"`
 }
 
+type HistoryAssignment struct {
+  Mdoc int `json:"mdoc"`
+  Name string `json:"name"`
+  Type string `json:"type"`
+  Serial string `json:"serial"`
+  Time_issued string `json:"time_issued"`
+  Time_returned string `json:"time_returned"`
+}

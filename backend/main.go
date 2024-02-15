@@ -12,6 +12,10 @@ const (
   STORAGE_DB = "Storage.db"
 )
 
+// Still need to handle if no Storage exists
+// Should have migrate and backup Storage.db each day or something
+// Still need error if device from day past is still assigned next day
+
 func main() {
   var database structs.Database;
   

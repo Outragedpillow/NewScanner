@@ -3,13 +3,17 @@ package structs
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"strings"
 )
 
 const (
   ASSIGN = "ASSIGN"
   UNASSIGN = "UNASSIGN"
-  )
+)
+
+// need beeter naming conventions
 
 type ScanResponse struct {
   Success bool `json:"success"`
@@ -18,6 +22,7 @@ type ScanResponse struct {
   Action string `json:"action"`
   Object interface{} `json:"object"`
   CurrentSignouts *[]Resident `json:"currentsignouts"`
+  History []HistoryAssignment `json:"historyassignment"`
   Error Error `json:"error"`
 }
 
@@ -31,9 +36,53 @@ type RequestData struct {
 }
 
 type ScanData struct {
-  Resident *Resident
+  Resident *Resident 
   Count int 
   CurrentSignouts *[]Resident
+}
+
+type HistoryPostData struct {
+  Date string `json:"date"`
+  Mdoc string `json:"mdoc"`
+  DeviceSerial string `json:"serial"`
+}
+
+func (histData HistoryPostData) BuildQuery() string {
+  query := "select resident_mdoc, resident_name, device_type, device_serial, time_issued, time_returned from assignments";
+
+  if histData.Date != "" {
+    query += fmt.Sprintf(" where day = '%s'", histData.Date);
+  }
+
+  if histData.Mdoc != "" {
+    if strings.Contains(query, "where") {
+      query += fmt.Sprintf(" and resident_mdoc = %s", histData.Mdoc);
+    } else {
+      query += fmt.Sprintf(" where resident_mdoc = %s", histData.Mdoc);
+    }
+  }
+
+  if histData.DeviceSerial != "" {
+    if strings.Contains(histData.DeviceSerial, "R90") {
+      histData.DeviceSerial = histData.DeviceSerial[12:];
+    }
+    if strings.Contains(query, "where") {
+      query += fmt.Sprintf(" and device_serial = '%s'", histData.DeviceSerial);
+    } else {
+      query += fmt.Sprintf(" where device_serial = '%s'", histData.DeviceSerial);
+    }
+  }
+
+  query += ";"
+
+  return query
+} 
+
+func (data HistoryPostData) IsNil() bool {
+  if data.Mdoc == "" && data.Date == "" && data.DeviceSerial == "" {
+    return true;
+  }
+  return false;
 }
 
 func (err Error) IsNil() bool {
@@ -41,6 +90,26 @@ func (err Error) IsNil() bool {
     return true;
   }
   return false;
+}
+
+func (scan *HistoryPostData) GetPostData(reqBody io.Reader) Error {
+  body, readErr := io.ReadAll(reqBody);
+  if readErr != nil {
+    return Error{
+      Place: "request.go GetPostData readErr",
+      Message: readErr.Error(),
+    };
+  }
+
+  unmarshalErr := json.Unmarshal(body, scan);
+  if unmarshalErr != nil {
+    return Error {
+      Place: "request.go GetPostData unmarshalErr",
+      Message: unmarshalErr.Error(),
+    };
+  }
+
+  return Error{};
 }
 
 func (scan *RequestData) GetPostData(reqBody io.Reader) Error {
