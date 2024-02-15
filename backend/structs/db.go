@@ -5,7 +5,6 @@ import (
 	"errors"
   "time"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -107,54 +106,32 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
     }
 }
 
-func (database Database) FindDevice(devType string, serial string) (Device, error) {
-  deviceType := strings.ToLower(devType);
-
+func (database Database) FindDevice(scan string) (Device, error) {
   var device Device;
   var assignedto sql.NullInt32;
-  // use this to see is QR type int rather than serial string
-  testIfTag, convErr := strconv.Atoi(serial);
-  if convErr != nil {
-    sqlStatement, prepErr := database.Conn.Prepare("select type, serial, tag_number, assigned_to from devices where type = ? and serial = ?");
-    if prepErr != nil {
-      return device, prepErr;
+  query := "select type, serial, tag_number, assigned_to from devices";
+
+  if strings.Contains(scan, "COM") || strings.Contains(scan, "CAM") || strings.Contains(scan, "HEA") || strings.Contains(scan, "HDS") || strings.Contains(scan, "MOU") {
+    query += " where qr_tag = ?";
+  } else {
+    if strings.ToUpper(scan[:3]) == "1S2" {
+      scan = scan[12:];
     }
-
-    defer sqlStatement.Close();
-
-    queryErr := sqlStatement.QueryRow(deviceType, serial).Scan(&device.Type, &device.Serial, &device.Tag_number, &assignedto);
-    if queryErr != nil {
-      if queryErr == sql.ErrNoRows {
-        return device, fmt.Errorf("Device %v was not found. Error: %w", device.Tag_number, queryErr);
-      }
-      return device, queryErr;
-    }
-
-    // check if assignedto is valid (not null)
-    if assignedto.Valid {
-      // create a new resident instance and assign it to device.assigned_to
-      device.Assigned_to = &Resident{Mdoc: int(assignedto.Int32)};
-    }
-
-    return device, nil;
+    query += " where serial = ?"
   }
 
-  sqlStatement, preperr := database.Conn.Prepare("select type, serial, tag_number, assigned_to from devices where type = ? and tag_number = ?");
-  if preperr != nil {
-    return device, preperr;
+  sqlStatment, prepErr := database.Conn.Prepare(query);
+  if prepErr != nil {
+    return device, prepErr;
   }
-  
-  defer sqlStatement.Close();
 
-  queryErr := sqlStatement.QueryRow(deviceType, testIfTag).Scan(&device.Type, &device.Serial, &device.Tag_number, &assignedto)
+  defer sqlStatment.Close();
+
+  queryErr := sqlStatment.QueryRow(scan).Scan(&device.Type, &device.Serial, &device.Tag_number, &assignedto);
   if queryErr != nil {
-    if queryErr == sql.ErrNoRows {
-      return device, fmt.Errorf("Device not found. Error: %w", queryErr);
-    }
     return device, queryErr;
   }
 
-  // check if assignedto is valid (not null)
   if assignedto.Valid {
     // create a new resident instance and assign it to device.assigned_to
     device.Assigned_to = &Resident{Mdoc: int(assignedto.Int32)};
@@ -166,7 +143,6 @@ func (database Database) FindDevice(devType string, serial string) (Device, erro
 func (database *Database) UpdateDevice(assignmentState string, deviceType string, serial string, residentMdoc int) error {
   switch assignmentState {
   case "ASSIGN":
-    fmt.Println("Assign");
     sqlStatment, prepErr := database.Conn.Prepare("UPDATE devices SET assigned_to = ? WHERE type = ? AND serial = ?");
     if prepErr != nil {
       return prepErr;
@@ -179,7 +155,6 @@ func (database *Database) UpdateDevice(assignmentState string, deviceType string
       return execErr;
     }
   case "UNASSIGN":
-    fmt.Println("Unassign");
     sqlStatment, prepErr := database.Conn.Prepare("UPDATE devices SET assigned_to = NULL WHERE type = ? AND serial = ?");
     if prepErr != nil {
       return prepErr;

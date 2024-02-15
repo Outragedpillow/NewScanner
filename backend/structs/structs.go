@@ -10,6 +10,7 @@ type Device struct {
   Type string `json:"type"`
   Serial string `json:"serial"`
   Tag_number int `json:"tag_number"`
+  Qr_tag string `json:"qr_tag"`
   Assigned_to *Resident `json:"-"`
 }
 
