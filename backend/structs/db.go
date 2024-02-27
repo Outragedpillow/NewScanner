@@ -207,7 +207,7 @@ func (db *Database) UpdateCurrentSignOuts(action string, resident *Resident) err
 func (database *Database) UpdateAssignmentLog(assingment Assignment) Error {
   formattedDay := time.Now().Format("01/02/06");
 
-  sqlStatement, prepErr := database.Conn.Prepare("INSERT INTO assignments (resident_mdoc, resident_name, device_type, device_serial, tag_number, qr_tag, time_issued, time_returned, day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  sqlStatement, prepErr := database.Conn.Prepare("INSERT INTO assignments (resident_mdoc, device_serial, time_issued, time_returned, day) VALUES (?, ?, ?, ?, ?)");
   if prepErr != nil {
     return Error {
       Place: "db.go UpdateAssignmentLog Prepare.",
@@ -217,7 +217,7 @@ func (database *Database) UpdateAssignmentLog(assingment Assignment) Error {
   
   defer sqlStatement.Close();
 
-  _, execErr := sqlStatement.Exec(assingment.Resident.Mdoc, assingment.Resident.Name, assingment.Device.Type, assingment.Device.Serial, assingment.Device.Tag_number, assingment.Device.Qr_tag, assingment.Time_issued, assingment.Time_returned, formattedDay);
+  _, execErr := sqlStatement.Exec(assingment.Resident.Mdoc, assingment.Device.Serial, assingment.Time_issued, assingment.Time_returned, formattedDay);
   if execErr != nil {
     return Error {
       Place: "db.gp UpdateAssignmentLog Exec",

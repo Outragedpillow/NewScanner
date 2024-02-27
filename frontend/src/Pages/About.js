@@ -5,7 +5,7 @@ const AboutPage = () => {
   return (
     <Grid container spacing={3}>
       <Grid item md={5}>
-        <Paper elevation={10} sx={{ml: .5, mt: 1, height: "90vh"}}>
+        <Paper elevation={10} sx={{ml: .5, mt: 1}}>
           <Box sx={{ml: 1}}>
             <Typography variant="h2">How To Use</Typography>
             <Typography variant="h5">Basic Steps</Typography>
@@ -41,7 +41,7 @@ const AboutPage = () => {
         </Paper>
       </Grid>
       <Grid item md={6.5}>
-        <Paper elevation={0} sx={{mt: 1, height: "90vh"}}>
+        <Paper elevation={0} sx={{mt: 1}}>
           <Typography variant="h2">Common Mistakes</Typography>
             <Typography variant="body1"><strong>Inactive Scanner State:</strong> After a period of inactivity, the scanner will go into a sleep
               mode. Pulling the trigger will reactivate the scanner but if something is scanned to quickly after the scanner is reactivated 
