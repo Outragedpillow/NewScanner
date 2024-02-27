@@ -44,11 +44,12 @@ type ScanData struct {
 type HistoryPostData struct {
   Date string `json:"date"`
   Mdoc string `json:"mdoc"`
+  DisplayName string `json:"display_name"`
   DeviceSerial string `json:"serial"`
 }
 
 func (histData HistoryPostData) BuildQuery() string {
-  query := "select resident_mdoc, resident_name, device_type, device_serial, time_issued, time_returned from assignments";
+  query := "select residents.mdoc, residents.name, devices.serial, devices.qr_tag, devices.tag_number, assignments.time_issued, assignments.time_returned from assignments left join devices on assignments.device_serial = devices.serial left join residents on assignments.resident_mdoc = residents.mdoc"
 
   if histData.Date != "" {
     query += fmt.Sprintf(" where day = '%s'", histData.Date);
@@ -62,14 +63,25 @@ func (histData HistoryPostData) BuildQuery() string {
     }
   }
 
+  if histData.DisplayName != "" {
+    if strings.Contains(query, "where") {
+      query += fmt.Sprintf(" and devices.qr_tag = '%s'", strings.ToUpper(histData.DisplayName));
+    } else {
+      query += fmt.Sprintf(" where devices.qr_tag = '%s'", strings.ToUpper(histData.DisplayName));
+    }
+  }
+
   if histData.DeviceSerial != "" {
     if strings.Contains(histData.DeviceSerial, "R90") {
-      histData.DeviceSerial = histData.DeviceSerial[12:];
+      index := strings.Index(histData.DeviceSerial, "R");
+      if index != -1 {
+        histData.DeviceSerial = histData.DeviceSerial[index:];
+      }
     }
     if strings.Contains(query, "where") {
-      query += fmt.Sprintf(" and device_serial = '%s'", histData.DeviceSerial);
+      query += fmt.Sprintf(" and device_serial = '%s'", strings.ToUpper(histData.DeviceSerial));
     } else {
-      query += fmt.Sprintf(" where device_serial = '%s'", histData.DeviceSerial);
+      query += fmt.Sprintf(" where device_serial = '%s'", strings.ToUpper(histData.DeviceSerial));
     }
   }
 
@@ -79,7 +91,7 @@ func (histData HistoryPostData) BuildQuery() string {
 } 
 
 func (data HistoryPostData) IsNil() bool {
-  if data.Mdoc == "" && data.Date == "" && data.DeviceSerial == "" {
+  if data.Mdoc == "" && data.Date == "" && data.DeviceSerial == "" && data.DisplayName == "" {
     return true;
   }
   return false;

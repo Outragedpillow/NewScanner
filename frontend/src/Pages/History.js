@@ -43,6 +43,7 @@ const HistoryPage = () => {
       <TableRow>
         <TableCell><Typography>Name</Typography></TableCell>
         <TableCell><Typography>Mdoc</Typography></TableCell>
+        <TableCell><Typography>Display Name</Typography></TableCell>
         <TableCell><Typography>Device Serial</Typography></TableCell>
         <TableCell><Typography>Time Issued</Typography></TableCell>
         <TableCell><Typography>Time Returned</Typography></TableCell>
@@ -52,6 +53,7 @@ const HistoryPage = () => {
           <TableRow key={index}>
             <TableCell>{item.name}</TableCell>
             <TableCell>{item.mdoc}</TableCell>
+            <TableCell>{item.qr_tag}</TableCell>
             <TableCell>{item.serial}</TableCell>
             <TableCell>{item.time_issued}</TableCell>
             <TableCell>{item.time_returned}</TableCell>

@@ -41,7 +41,7 @@ const Sidebar = ({ setGetData, setPostData, setClearScans, clearScans }) => {
       setFlashColor('red');
       setTimeout(() => {
         setFlashColor('');
-      }, 1000); // Reset flash color after 1 second
+      }, 1000);
     } else {
       setFlashColor('');
     }

@@ -6,6 +6,12 @@ type Resident struct {
   Devices []Device `json:"devices"`
 }
 
+type Staff struct {
+  Name string
+  Id string
+  Devices []Device
+}
+
 type Device struct {
   Type string `json:"type"`
   Serial string `json:"serial"`
@@ -26,6 +32,8 @@ type HistoryAssignment struct {
   Name string `json:"name"`
   Type string `json:"type"`
   Serial string `json:"serial"`
+  Tag_number int `json:"tag_number"`
+  Qr_tag string `json:"qr_tag"`
   Time_issued string `json:"time_issued"`
   Time_returned string `json:"time_returned"`
 }

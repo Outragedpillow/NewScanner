@@ -36,7 +36,7 @@ func HandleGetHistory(w http.ResponseWriter, r *http.Request, db *structs.Databa
         return;
     }
 
-    postHistoryDataErr := json.NewDecoder(r.Body).Decode(&postData)
+    postHistoryDataErr := json.NewDecoder(r.Body).Decode(&postData);
     if postHistoryDataErr != nil {
       response := structs.ScanResponse {
         Success: false,
@@ -58,7 +58,7 @@ func HandleGetHistory(w http.ResponseWriter, r *http.Request, db *structs.Databa
 
     if postData.IsNil() {
       formattedDate := time.Now().Format("01/02/06");
-      query = fmt.Sprintf("select resident_mdoc, resident_name, device_type, device_serial, time_issued, time_returned from assignments where day = '%s';", formattedDate);
+      query = fmt.Sprintf("select residents.mdoc, residents.name, devices.serial, devices.qr_tag, devices.tag_number, assignments.time_issued, assignments.time_returned from assignments left join devices on assignments.device_serial = devices.serial left join residents on assignments.resident_mdoc = residents.mdoc where assignments.day = '%s'", formattedDate)
     } else {
       query = postData.BuildQuery();
     }
@@ -72,7 +72,7 @@ func HandleGetHistory(w http.ResponseWriter, r *http.Request, db *structs.Databa
     for rows.Next() {
         var assignment structs.HistoryAssignment;
 
-        scanErr := rows.Scan(&assignment.Mdoc, &assignment.Name, &assignment.Type, &assignment.Serial, &assignment.Time_issued, &assignment.Time_returned);
+        scanErr := rows.Scan(&assignment.Mdoc, &assignment.Name, &assignment.Serial, &assignment.Qr_tag, &assignment.Tag_number, &assignment.Time_issued, &assignment.Time_returned);
         if scanErr != nil {
             response := structs.ScanResponse{
                 Success: false,

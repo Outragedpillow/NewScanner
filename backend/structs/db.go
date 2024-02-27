@@ -57,7 +57,7 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
 
     if exists == 1 {
       sqlStatement, prepErr := database.Conn.Prepare(`
-          SELECT residents.name, residents.mdoc, devices.type, devices.serial, devices.tag_number, devices.assigned_to
+          SELECT residents.name, residents.mdoc, devices.type, devices.serial, devices.tag_number, devices.qr_tag, devices.assigned_to
           FROM residents
           LEFT JOIN devices ON residents.mdoc = devices.assigned_to
           WHERE residents.mdoc = ?
@@ -76,26 +76,25 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
 
       for rows.Next() {
           var device Device;
-          var deviceType, deviceSerial sql.NullString;
+          var deviceType, deviceSerial, deviceQrTag sql.NullString;
           var deviceTagNumber sql.NullInt32;
           var assignedTo sql.NullInt32;
-          err := rows.Scan(&resident.Name, &resident.Mdoc, &deviceType, &deviceSerial, &deviceTagNumber, &assignedTo);
+          err := rows.Scan(&resident.Name, &resident.Mdoc, &deviceType, &deviceSerial, &deviceTagNumber, &deviceQrTag, &assignedTo);
           if err != nil {
               return resident, fmt.Errorf("Error: %w", err);
           }
 
-          // Check if all fields are not NULL
-          if deviceType.Valid && deviceSerial.Valid && deviceTagNumber.Valid && assignedTo.Valid {
-              device.Type = deviceType.String
-              device.Serial = deviceSerial.String
-              device.Tag_number = int(deviceTagNumber.Int32)
+          if deviceType.Valid && deviceSerial.Valid && deviceTagNumber.Valid && deviceQrTag.Valid && assignedTo.Valid {
+              device.Type = deviceType.String;
+              device.Serial = deviceSerial.String;
+              device.Tag_number = int(deviceTagNumber.Int32);
+              device.Qr_tag = deviceQrTag.String;
 
-              // Check if Assigned_to is not NULL
               if assignedTo.Valid {
-                  device.Assigned_to = &Resident{Mdoc: int(assignedTo.Int32)}
+                  device.Assigned_to = &Resident{Mdoc: int(assignedTo.Int32)};
               }
 
-              resident.Devices = append(resident.Devices, device)
+              resident.Devices = append(resident.Devices, device);
           }
       }
 
@@ -109,7 +108,7 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
 func (database Database) FindDevice(scan string) (Device, error) {
   var device Device;
   var assignedto sql.NullInt32;
-  query := "select type, serial, tag_number, assigned_to from devices";
+  query := "select type, serial, tag_number, qr_tag, assigned_to from devices";
 
   if strings.Contains(scan, "COM") || strings.Contains(scan, "CAM") || strings.Contains(scan, "HEA") || strings.Contains(scan, "HDS") || strings.Contains(scan, "MOU") {
     query += " where qr_tag = ?";
@@ -127,7 +126,7 @@ func (database Database) FindDevice(scan string) (Device, error) {
 
   defer sqlStatment.Close();
 
-  queryErr := sqlStatment.QueryRow(scan).Scan(&device.Type, &device.Serial, &device.Tag_number, &assignedto);
+  queryErr := sqlStatment.QueryRow(scan).Scan(&device.Type, &device.Serial, &device.Tag_number, &device.Qr_tag, &assignedto);
   if queryErr != nil {
     return device, queryErr;
   }
@@ -208,7 +207,7 @@ func (db *Database) UpdateCurrentSignOuts(action string, resident *Resident) err
 func (database *Database) UpdateAssignmentLog(assingment Assignment) Error {
   formattedDay := time.Now().Format("01/02/06");
 
-  sqlStatement, prepErr := database.Conn.Prepare("INSERT INTO assignments (resident_mdoc, resident_name, device_type, device_serial, time_issued, time_returned, day) VALUES (?, ?, ?, ?, ?, ?, ?)");
+  sqlStatement, prepErr := database.Conn.Prepare("INSERT INTO assignments (resident_mdoc, resident_name, device_type, device_serial, tag_number, qr_tag, time_issued, time_returned, day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
   if prepErr != nil {
     return Error {
       Place: "db.go UpdateAssignmentLog Prepare.",
@@ -218,7 +217,7 @@ func (database *Database) UpdateAssignmentLog(assingment Assignment) Error {
   
   defer sqlStatement.Close();
 
-  _, execErr := sqlStatement.Exec(assingment.Resident.Mdoc, assingment.Resident.Name, assingment.Device.Type, assingment.Device.Serial, assingment.Time_issued, assingment.Time_returned, formattedDay);
+  _, execErr := sqlStatement.Exec(assingment.Resident.Mdoc, assingment.Resident.Name, assingment.Device.Type, assingment.Device.Serial, assingment.Device.Tag_number, assingment.Device.Qr_tag, assingment.Time_issued, assingment.Time_returned, formattedDay);
   if execErr != nil {
     return Error {
       Place: "db.gp UpdateAssignmentLog Exec",

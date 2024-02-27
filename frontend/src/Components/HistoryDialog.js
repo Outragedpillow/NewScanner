@@ -13,7 +13,7 @@ const HistoryDialog = ({onSubmit}) => {
     event.preventDefault();
     onSubmit(formData);
     setFormData({
-      date: "", mdoc: "", serial: ""
+      date: "", mdoc: "", display_name: "", serial: ""
     });
     handleClose();
   }
@@ -45,6 +45,7 @@ const HistoryDialog = ({onSubmit}) => {
               <TextField sx={{mt: 1}} value={formData.date} name="date" label="Date" onChange={handleInputChange} placeholder="format: 01/01/24"/>
               <TextField sx={{mt: 1}} value={formData.mdoc} name="mdoc" label="Mdoc" onChange={handleInputChange} placeholder="ex: 151110"/>
               <TextField sx={{mt: 1}} value={formData.serial} name="serial" label="Device Serial" onChange={handleInputChange} placeholder="ex: 1sR90YFFFF" />
+              <TextField sx={{mt: 1}} value={formData.display_name} name="display_name" label="Display Name" onChange={handleInputChange} placeholder="ex: COM-149" />
             </FormControl> 
         </DialogContent>
         <DialogActions>
