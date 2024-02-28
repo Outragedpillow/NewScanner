@@ -42,9 +42,9 @@ const CurrentSignoutsDisplay = () => {
                 })} 
               </TableCell>
               : 
-              <TableCell sx={{display: "flex"}}>
+              <TableCell sx={{display: "flex", ml: 0, pl: 0}}>
                 {item.devices.map((device, index3) => {
-                  return <Typography fontSize={20} key={index3} sx={{pr: 1, mt: 0}}>{device.qr_tag}</Typography>;
+                  return <Typography fontSize={20} key={index3} sx={{pr: 0, mt: 0}}>{index3 < 2 && index3 < item.devices.length - 1 ? device.qr_tag + ","  : device.qr_tag}&nbsp;</Typography>;
                 })} 
               </TableCell>
               }

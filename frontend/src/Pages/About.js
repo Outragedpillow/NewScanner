@@ -13,7 +13,7 @@ const AboutPage = () => {
             <Typography variant="body1"><strong>Step 2:</strong> Scan or Enter the Device Qr Code or Barcode.</Typography>
             <Typography variant="body1"><strong>Step 3:</strong> Scan or Enter the Break Qr Code</Typography>
           </Box>
-          <Box sx={{pt: 5, ml: 1}}>
+          <Box sx={{pt: 5, ml: 1, height: "70vh", overflow: "auto"}}>
             <Typography variant="h5">Additional Information</Typography>
             <Typography variant="body1" sx={{mt: .5}}><strong>Step 2:</strong> Step 2 is repeated for each device and will continue to assign/unassign devices
               until the Break Qr code is entered or scanned.
@@ -41,7 +41,7 @@ const AboutPage = () => {
         </Paper>
       </Grid>
       <Grid item md={6.5}>
-        <Paper elevation={0} sx={{mt: 1}}>
+        <Paper elevation={0} sx={{mt: 1, height: "70vh", overflow: "auto"}}>
           <Typography variant="h2">Common Mistakes</Typography>
             <Typography variant="body1"><strong>Inactive Scanner State:</strong> After a period of inactivity, the scanner will go into a sleep
               mode. Pulling the trigger will reactivate the scanner but if something is scanned to quickly after the scanner is reactivated 
