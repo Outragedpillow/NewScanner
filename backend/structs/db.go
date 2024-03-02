@@ -5,7 +5,6 @@ import (
 	"errors"
   "time"
 	"fmt"
-	"strings"
 )
 
 type Database struct {
@@ -108,18 +107,8 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
 func (database Database) FindDevice(scan string) (Device, error) {
   var device Device;
   var assignedto sql.NullInt32;
-  query := "select type, serial, tag_number, qr_tag, assigned_to from devices";
 
-  if strings.Contains(scan, "COM") || strings.Contains(scan, "CAM") || strings.Contains(scan, "HEA") || strings.Contains(scan, "HDS") || strings.Contains(scan, "MOU") {
-    query += " where qr_tag = ?";
-  } else {
-    if strings.ToUpper(scan[:3]) == "1S2" {
-      scan = scan[12:];
-    }
-    query += " where serial = ?"
-  }
-
-  sqlStatment, prepErr := database.Conn.Prepare(query);
+  sqlStatment, prepErr := database.Conn.Prepare("select type, serial, tag_number, qr_tag, assigned_to from devices where qr_tag = ?");
   if prepErr != nil {
     return device, prepErr;
   }
@@ -128,7 +117,19 @@ func (database Database) FindDevice(scan string) (Device, error) {
 
   queryErr := sqlStatment.QueryRow(scan).Scan(&device.Type, &device.Serial, &device.Tag_number, &device.Qr_tag, &assignedto);
   if queryErr != nil {
-    return device, queryErr;
+    if queryErr != sql.ErrNoRows {
+      return device, queryErr;
+    }
+
+    sqlStmnt, prepareErr := database.Conn.Prepare("select type, serial, tag_number, qr_tag, assigned_to from devices where serial = ?");
+    if prepareErr != nil {
+      return device, prepareErr;
+    }
+
+    queryErr2 := sqlStmnt.QueryRow(scan).Scan(&device.Type, &device.Serial, &device.Tag_number, &device.Qr_tag, &assignedto);
+    if queryErr2 != nil {
+      return device, queryErr2;
+    }
   }
 
   if assignedto.Valid {
