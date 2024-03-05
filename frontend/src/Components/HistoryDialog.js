@@ -1,21 +1,22 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, TextField } from "@mui/material";
+import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, TextField } from "@mui/material";
 import React from "react";
 
 const HistoryDialog = ({onSubmit}) => {
-  const [openDialog, setOpenDialog] = React.useState(false);
+  const [openFilterDialog, setOpenFilterDialog] = React.useState(false);
   const [formData, setFormData] = React.useState({
     date: "",
     mdoc: "",
     serial: "",
+    display_name: "",
   })
 
   const handleSubmit = (event) => {
     event.preventDefault();
     onSubmit(formData);
     setFormData({
-      date: "", mdoc: "", display_name: "", serial: ""
+      date: "", mdoc: "", display_name: "", serial: "",
     });
-    handleClose();
+    handleFilterClose();
   }
 
   const handleInputChange = (e) => {
@@ -24,32 +25,37 @@ const HistoryDialog = ({onSubmit}) => {
    })
   }
 
-  const handleClose = () => {
-    setOpenDialog(false);
+  const handleFilterClose = () => {
+    setFormData({
+      date: "", mdoc: "", display_name: "", serial: "",
+    });
+    setOpenFilterDialog(false)
   }
 
-  const handleOpen = () => {
-    setOpenDialog(true);
+  const handleFilterOpen = () => {
+    setOpenFilterDialog(true);
   }
 
  return (
     <div>
-      <Button variant="contained" onClick={handleOpen} sx={{ml: 1}}>
-        Filter History
-      </Button>
-      <Dialog open={openDialog} onClose={handleClose}>
+      <ButtonGroup>
+        <Button variant="contained" onClick={handleFilterOpen} sx={{ml: 1}}>
+          Filter History
+        </Button>
+      </ButtonGroup>
+      <Dialog open={openFilterDialog} onClose={handleFilterClose}>
         <form onSubmit={handleSubmit}>
         <DialogTitle>History Filter</DialogTitle>
         <DialogContent>
             <FormControl>
-              <TextField sx={{mt: 1}} value={formData.date} name="date" label="Date" onChange={handleInputChange} placeholder="format: 01/01/24"/>
-              <TextField sx={{mt: 1}} value={formData.mdoc} name="mdoc" label="Mdoc" onChange={handleInputChange} placeholder="ex: 151110"/>
-              <TextField sx={{mt: 1}} value={formData.serial} name="serial" label="Device Serial" onChange={handleInputChange} placeholder="ex: 1sR90YFFFF" />
-              <TextField sx={{mt: 1}} value={formData.display_name} name="display_name" label="Display Name" onChange={handleInputChange} placeholder="ex: COM-149" />
+              <TextField sx={{mt: 1}} value={formData.date} name="date" label="Date" onChange={handleInputChange} placeholder="Format: 01/01/24"/>
+              <TextField sx={{mt: 1}} value={formData.mdoc} name="mdoc" label="Mdoc" onChange={handleInputChange} placeholder="Format: 151110"/>
+              <TextField sx={{mt: 1}} value={formData.serial} name="serial" label="Device Serial" onChange={handleInputChange} placeholder="Ex: 1sR90YFFFF" />
+              <TextField sx={{mt: 1}} value={formData.display_name} name="display_name" label="Display Name" onChange={handleInputChange} placeholder="Format: COM-149" />
             </FormControl> 
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">Close</Button>
+          <Button onClick={handleFilterClose} color="primary">Close</Button>
           <Button type="submit" color="primary">Submit</Button>
         </DialogActions>
         </form>

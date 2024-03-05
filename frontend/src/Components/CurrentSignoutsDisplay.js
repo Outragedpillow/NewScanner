@@ -35,7 +35,7 @@ const CurrentSignoutsDisplay = () => {
               <TableCell sx={{mr: 0, pr: 0, pl: 0, pr: 0}}>
                 <Typography fontSize={20} sx={{pt: -2}}>{item.mdoc}</Typography>
               </TableCell>
-              {arrayLength <= 8 ? 
+              {arrayLength >= 8 ? 
               <TableCell sx={{mr: 0, pr: 0, pl: 0, pr: 0}}>
                 {item.devices.map((device, index2) => {
                   return <Typography fontSize={20} key={index2}>Type: {device.type}, Tag Number: {device.tag_number}</Typography>;

@@ -162,16 +162,15 @@ func handleResidentRequest(w http.ResponseWriter, db *structs.Database, scan str
 
 func handleDeviceRequest(w http.ResponseWriter, db *structs.Database, scan structs.RequestData, scanData structs.ScanData, CurrentSignouts *[]structs.Resident) structs.Error {
   formattedTime := time.Now().Format("01/02/06 15:04:05");
-  scanUpper := strings.ToUpper(scan.Scan)
 
-  if len(scanUpper) < 4 {
+  if len(scan.Scan) < 4 {
     return structs.Error {
       Place: "check-scan.go handleDeviceRequest len < 4",
       Message: "Invalid scan data. Length of scan is less than 4. If the scan is a resident please break then rescan otherwise please verify scan data and retry.",
     }
   }
 
-  foundDevice, findDeviceErr := db.FindDevice(scanUpper);
+  foundDevice, findDeviceErr := db.FindDevice(scan.Scan);
   if findDeviceErr != nil {
     return structs.Error{
       Place: "check-scan.go handleDeviceRequest FindDevice",

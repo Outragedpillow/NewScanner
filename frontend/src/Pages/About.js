@@ -44,7 +44,7 @@ const AboutPage = () => {
         <Paper elevation={0} sx={{mt: 1, height: "70vh", overflow: "auto"}}>
           <Typography variant="h2">Common Mistakes</Typography>
             <Typography variant="body1"><strong>Inactive Scanner State:</strong> After a period of inactivity, the scanner will go into a sleep
-              mode. Pulling the trigger will reactivate the scanner but if something is scanned to quickly after the scanner is reactivated 
+              mode. Pulling the trigger will reactivate the scanner but if something is scanned too quickly after the scanner is reactivated 
               it may not properly scan the data. Sometimes this will cause the scanner to emit a warning beep however this will not always
               happen. To prevent this from happening it is best to pull the trigger a few times, until seeing the scanner flash at least twice,
               before scanning an item. 
