@@ -1,57 +1,51 @@
-import { Box, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import React from "react";
+import { DataGrid } from "@mui/x-data-grid";
 import { GetDataContext } from "../Pages/Home";
+
+const renderDevicesCell = (params) => (
+  <div style={{ display: "flex" }}>
+    {params.value.map((device, index) => (
+      <div key={index} style={{ marginRight: "10px" }}>{device.qr_tag}</div>
+    ))}
+  </div>
+);
 
 const CurrentSignoutsDisplay = () => {
   const currentSignouts = React.useContext(GetDataContext);
 
+  const rowsWithIds = currentSignouts.map((item, index) => {
+    return { id: index + 1, ...item };
+  });
+
   if (currentSignouts === undefined) {
     return (
       <Box sx={{ height: "95vh", overflow: "auto" }}>
-        <Table><TableBody><TableRow><TableCell><Typography variant="h3">No Devices Assigned</Typography></TableCell></TableRow></TableBody></Table>
+        <Typography variant="h3">No Devices Assigned</Typography>
       </Box>
     );
-  } 
+  }
 
-  let arrayLength = currentSignouts.length;
+  const columns = [
+    { field: "name", headerName: "Name", width: 200 },
+    { field: "mdoc", headerName: "Mdoc", width: 150 },
+    {
+      field: "devices",
+      headerName: "Devices",
+      width: 400,
+      renderCell: renderDevicesCell,
+    },
+  ];
 
   return (
-    <Box sx={{ height: "95vh", overflow: "auto", ml: .5 }}>
-      <Table stickyHeader sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{pl: 0}}><Typography fontSize={30}>Name</Typography></TableCell>
-            <TableCell sx={{pl: 0}} ><Typography fontSize={30}>Mdoc</Typography></TableCell>
-            <TableCell sx={{pl: 0}} ><Typography fontSize={30}>Devices</Typography></TableCell>
-          </TableRow>
-        </TableHead>
-        <br />
-        <TableBody>
-          {currentSignouts.map((item, index) => (
-            <TableRow key={index}>
-              <TableCell sx={{mr: 0, pr: 0, pl: 0, pr: 0}}>
-                <Typography fontSize={20} sx={{mr: -10}}>{item.name}</Typography>
-              </TableCell>
-              <TableCell sx={{mr: 0, pr: 0, pl: 0, pr: 0}}>
-                <Typography fontSize={20} sx={{pt: -2}}>{item.mdoc}</Typography>
-              </TableCell>
-              {arrayLength >= 8 ? 
-              <TableCell sx={{mr: 0, pr: 0, pl: 0, pr: 0}}>
-                {item.devices.map((device, index2) => {
-                  return <Typography fontSize={20} key={index2}>Type: {device.type}, Tag Number: {device.tag_number}</Typography>;
-                })} 
-              </TableCell>
-              : 
-              <TableCell sx={{display: "flex", ml: 0, pl: 0}}>
-                {item.devices.map((device, index3) => {
-                  return <Typography fontSize={20} key={index3} sx={{pr: 0, mt: 0}}>{index3 < 2 && index3 < item.devices.length - 1 ? device.qr_tag + ","  : device.qr_tag}&nbsp;</Typography>;
-                })} 
-              </TableCell>
-              }
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <Box sx={{ height: "95vh", overflow: "auto", ml: 0.5 }}>
+      <DataGrid columns={columns} pagination pageSize={5} rows={rowsWithIds} initialState={{
+          pagination: {
+            paginationModel: { page: 0, pageSize: 5 },
+          },
+        }}
+        pageSizeOptions={[5, 10, 15, 20, 25]}
+ />
     </Box>
   );
 };

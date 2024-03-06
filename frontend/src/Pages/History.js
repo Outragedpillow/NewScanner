@@ -2,6 +2,7 @@ import { Box, Table, TableCell, TableRow, Typography } from "@mui/material";
 import React from "react";
 import HistoryDialog from "../Components/HistoryDialog";
 import axios from "axios";
+import { DataGrid } from "@mui/x-data-grid";
 
 const HistoryPage = () => {
   const getCurrentDate = () => {
@@ -35,32 +36,37 @@ const HistoryPage = () => {
     setFormData(data);
   } 
 
+  const rowsWithIds = postResp.map((item, index) => {
+    return { id: index + 1, ...item };
+  });
+
+
+  const columns = [
+    {field: "name", headerName: "Name", width: 200},
+    {field: "mdoc", headerName: "MDOC", width: 200},
+    {field: "qr_tag", headerName: "Display Name", width: 200},
+    {field: "serial", headerName: "Device Serial", width: 200},
+    {field: "time_issued", headerName: "Time Issued", width: 200},
+    {field: "time_returned", headerName: "Time Returned", width: 200},
+    {
+    field: "customHeader",
+    headerName: "Custom Header",
+    width: 250,
+    renderHeader: () => <HistoryDialog onSubmit={handleDialogSubmit} />,
+  },
+  ]
+
   return (
-    <Box >
-    <Typography variant="h1" sx={{ml: 50 }}>History</Typography>
-    <HistoryDialog onSubmit={handleDialogSubmit} />
-    <Table sx={{ml: 1, width: .99}}>
-      <TableRow>
-        <TableCell><Typography>Name</Typography></TableCell>
-        <TableCell><Typography>Mdoc</Typography></TableCell>
-        <TableCell><Typography>Display Name</Typography></TableCell>
-        <TableCell><Typography>Device Serial</Typography></TableCell>
-        <TableCell><Typography>Time Issued</Typography></TableCell>
-        <TableCell><Typography>Time Returned</Typography></TableCell>
-      </TableRow>
-      {postResp !== null ? postResp.map((item, index) => {
-        return (
-          <TableRow key={index}>
-            <TableCell>{item.name}</TableCell>
-            <TableCell>{item.mdoc}</TableCell>
-            <TableCell>{item.qr_tag}</TableCell>
-            <TableCell>{item.serial}</TableCell>
-            <TableCell>{item.time_issued}</TableCell>
-            <TableCell>{item.time_returned}</TableCell>
-          </TableRow>
-      )}): <TableRow><TableCell>No History</TableCell></TableRow>}
-    </Table>
+    <Box sx={{ height: "95vh", overflow: "auto", ml: 0.5 }}>
+      <DataGrid sx={{height: "94vh"}} columns={columns} pagination pageSize={5} rows={rowsWithIds} initialState={{
+          pagination: {
+            paginationModel: { page: 0, pageSize: 5 },
+          },
+        }}
+        pageSizeOptions={[5, 10, 15, 20, 25, 50, 100]}
+ />
     </Box>
+
   )
 }
 
