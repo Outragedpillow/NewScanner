@@ -3,8 +3,9 @@ package structs
 import (
 	"database/sql"
 	"errors"
-  "time"
 	"fmt"
+	"strings"
+	"time"
 )
 
 type Database struct {
@@ -107,6 +108,9 @@ func (database Database) FindResident(mdoc int) (Resident, error) {
 func (database Database) FindDevice(scan string) (Device, error) {
   var device Device;
   var assignedto sql.NullInt32;
+  qrScan := strings.ToUpper(scan);
+  serialScan := scan;
+
 
   sqlStatment, prepErr := database.Conn.Prepare("select type, serial, tag_number, qr_tag, assigned_to from devices where qr_tag = ?");
   if prepErr != nil {
@@ -115,7 +119,7 @@ func (database Database) FindDevice(scan string) (Device, error) {
 
   defer sqlStatment.Close();
 
-  queryErr := sqlStatment.QueryRow(scan).Scan(&device.Type, &device.Serial, &device.Tag_number, &device.Qr_tag, &assignedto);
+  queryErr := sqlStatment.QueryRow(qrScan).Scan(&device.Type, &device.Serial, &device.Tag_number, &device.Qr_tag, &assignedto);
   if queryErr != nil {
     if queryErr != sql.ErrNoRows {
       return device, queryErr;
@@ -126,7 +130,7 @@ func (database Database) FindDevice(scan string) (Device, error) {
       return device, prepareErr;
     }
 
-    queryErr2 := sqlStmnt.QueryRow(scan).Scan(&device.Type, &device.Serial, &device.Tag_number, &device.Qr_tag, &assignedto);
+    queryErr2 := sqlStmnt.QueryRow(serialScan).Scan(&device.Type, &device.Serial, &device.Tag_number, &device.Qr_tag, &assignedto);
     if queryErr2 != nil {
       return device, queryErr2;
     }

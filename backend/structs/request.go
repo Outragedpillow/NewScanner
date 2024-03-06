@@ -79,9 +79,9 @@ func (histData HistoryPostData) BuildQuery() string {
       }
     }
     if strings.Contains(query, "where") {
-      query += fmt.Sprintf(" and device_serial = '%s'", strings.ToUpper(histData.DeviceSerial));
+      query += fmt.Sprintf(" and device_serial = '%s'", histData.DeviceSerial);
     } else {
-      query += fmt.Sprintf(" where device_serial = '%s'", strings.ToUpper(histData.DeviceSerial));
+      query += fmt.Sprintf(" where device_serial = '%s'", histData.DeviceSerial);
     }
   }
 

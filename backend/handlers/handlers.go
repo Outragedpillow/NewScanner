@@ -27,13 +27,20 @@ func HandleRoutes(mux *http.ServeMux, db *structs.Database) {
   }))
 
   mux.HandleFunc("/api/check-scan", setCORSHeaders(func(w http.ResponseWriter, r *http.Request) {
-        HandleCheckScan(w, r, db, &scanData, scanData.CurrentSignouts);
-    }));
+    HandleCheckScan(w, r, db, &scanData, scanData.CurrentSignouts);
+  }));
 
   mux.HandleFunc("/api/history", setCORSHeaders(func(w http.ResponseWriter, r *http.Request) {
     HandleGetHistory(w, r, db);
   }));
 
+  mux.HandleFunc("/api/add-new-resident", setCORSHeaders(func(w http.ResponseWriter, r *http.Request) {
+    HandleAddNewResident(w, r, db);
+  }));
+
+  mux.HandleFunc("/api/add-new-device", setCORSHeaders(func(w http.ResponseWriter, r *http.Request) {
+    HandleAddNewDevice(w, r, db);
+  }));
 }
 
 func setCORSHeaders(next http.HandlerFunc) http.HandlerFunc {
