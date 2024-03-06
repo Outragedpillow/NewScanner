@@ -3,6 +3,9 @@ import React from "react";
 
 const HistoryDialog = ({onSubmit}) => {
   const [openFilterDialog, setOpenFilterDialog] = React.useState(false);
+  const [dateError, setDateError] = React.useState(false);
+  const [mdocError, setMdocError] = React.useState(false);
+  const [displayNameError, setDisplayNameError] = React.useState(false);
   const [formData, setFormData] = React.useState({
     date: "",
     mdoc: "",
@@ -20,9 +23,26 @@ const HistoryDialog = ({onSubmit}) => {
   }
 
   const handleInputChange = (e) => {
-   setFormData({
-     ...formData, [e.target.name]: e.target.value
-   })
+    const {name, value} = e.target;
+
+    if (name === "date") {
+      const isValidInput = /^[0-9]{2}\/[0-9]{2}\/[0-9]{2}$/.test(value);
+      setDateError(!isValidInput);
+    }
+
+    if (name === 'mdoc') {
+      const isValidInput = /^[0-9]+$/.test(value);
+      setMdocError(!isValidInput);
+    }
+
+    if (name === 'display_name') {
+      const isValidInput = /^[A-Za-z0-9]+-[A-Za-z0-9]+$/.test(value);
+      setDisplayNameError(!isValidInput);
+    }
+
+    setFormData({
+      ...formData, [e.target.name]: e.target.value
+    })
   }
 
   const handleFilterClose = () => {
@@ -48,10 +68,22 @@ const HistoryDialog = ({onSubmit}) => {
         <DialogTitle>History Filter</DialogTitle>
         <DialogContent>
             <FormControl>
-              <TextField sx={{mt: 1}} value={formData.date} name="date" label="Date" onChange={handleInputChange} placeholder="Format: 01/01/24"/>
-              <TextField sx={{mt: 1}} value={formData.mdoc} name="mdoc" label="Mdoc" onChange={handleInputChange} placeholder="Format: 151110"/>
+              <TextField sx={{mt: 1}} value={formData.date} error={dateError} name="date" label="Date" onChange={handleInputChange} placeholder="Format: 01/01/24"
+                helperText={dateError ? "required format: mm/dd/yy" : ""}  
+                inputProps={{
+                  pattern: "[0-9]{2}/[0-9]{2}/[0-9]{2}"}}
+              />
+              <TextField sx={{mt: 1}} value={formData.mdoc} error={mdocError} name="mdoc" label="Mdoc" onChange={handleInputChange} placeholder="Format: 151110"
+                helperText={mdocError ? "intergers only" : ""}  
+                inputProps={{
+                  pattern: "[0-9]+"}}
+                />
               <TextField sx={{mt: 1}} value={formData.serial} name="serial" label="Device Serial" onChange={handleInputChange} placeholder="Ex: 1sR90YFFFF" />
-              <TextField sx={{mt: 1}} value={formData.display_name} name="display_name" label="Display Name" onChange={handleInputChange} placeholder="Format: COM-149" />
+              <TextField sx={{mt: 1}} value={formData.display_name} error={displayNameError} name="display_name" label="Display Name" onChange={handleInputChange} placeholder="Format: COM-149"
+                helperText={displayNameError ? "must contain a hyphen followed by a number" : ""}  
+                inputProps={{
+                  pattern: "[A-Za-z0-9]+-[A-Za-z0-9]+"}}
+              />
             </FormControl> 
         </DialogContent>
         <DialogActions>
